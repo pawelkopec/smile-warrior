@@ -1,7 +1,7 @@
 #Test script to load data by function
 
 import sys
-sys.path.append("B:\STUDIA MATERIALY\Gradient\Rozpoznawanie usmiechow\Rozpoznawanie usmiechow program")
+sys.path.append("Your path to project")
 from server import load_data
 
 print("Hello World")
