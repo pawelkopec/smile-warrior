@@ -1,176 +1,59 @@
-#Nothing interesting, script in need of improvement
+#Module to load data set and divide it into train, test and validation sets for X and Y
 
-import numpy as np
-from numpy import genfromtxt
-import pandas as pd
-import matplotlib.pyplot as plt
+def load_data(filename):
 
-"""
-my_data = genfromtxt('fer2013.csv', delimiter=',', skip_header =1)
+    import numpy as np
 
-print(my_data.shape)
+    try:
+        file = open(filename)
+    except:
+        print("Unable to open the file")
+    else:
+        print("File opened")
 
-print(my_data[0])
-print(my_data[1])
-print(my_data[2])
+    X_list = []
+    Y_list = []
 
-print("Przed zamianą")
+    first_line = True
 
-for i in range(20):
-    print("Probka nr %d: %d" % (i+1, my_data[i, 0]))
+    print("Preparing data...")
 
+    for line in file:
+        if first_line == True:
+            first_line = False
+        else:
+            row = line.split(',')
+            Y_list.append(int(row[0]))
+            X_list.append([int(pixel) for pixel in row[1].split()])
 
-for i in range(my_data.shape[0]):
-    if(my_data[i,0] == 3):
-        my_data[i, 0] = 1
-    elif (my_data[i,0] != 3):
-        my_data[i, 0] = 0
+    X_data = np.array(X_list)
+    Y_data = np.array(Y_list)
 
+    file.close()
 
-print("Po zamianie")
+    training_sample = 28709
+    test_sample = 3589
+    validation_sample = 3589
 
-for i in range(20):
-    print("Probka nr %d: %d" % (i+1, my_data[i, 0]))
+    X_train = X_data[0:training_sample, :]
+    X_test = X_data[training_sample:training_sample + test_sample, :]
+    X_validate = X_data[training_sample + test_sample:training_sample + test_sample + validation_sample, :]
 
-print(my_data.shape)
+    Y_train = Y_data[0:training_sample]
+    Y_validate = Y_data[training_sample:training_sample + test_sample]
+    Y_test = Y_data[training_sample + test_sample:training_sample + test_sample + validation_sample]
 
-print(my_data[0])
-print(my_data[1])
-print(my_data[2])
+    print("Data prepared")
 
-np.savetxt("smile_warrior_dataset.csv", my_data, delimiter=",")
-"""
-data_set = pd.read_csv("fer2013.csv")
-# Preview the first 5 lines of the loaded data
-
-print("Before:")
-print(data_set.head(n=20))
-
-print(data_set.shape)
-
-training_sample = 0
-test_sample = 0
-validation_sample= 0
-
-for index,row in data_set.iterrows():
-    if (row['emotion'] == 3):
-        data_set.at[index, 'emotion'] = 1
-    elif (row['emotion'] != 3):
-        data_set.at[index, 'emotion'] = 0
-
-    if (row['Usage'] == 'Training'):
-        training_sample= training_sample + 1
-    elif (row['Usage'] == 'PublicTest'):
-        test_sample= test_sample + 1
-    elif (row['Usage'] == 'PrivateTest'):
-        validation_sample= validation_sample + 1
-
-
-print(training_sample)      #28709
-print(test_sample)          #3589
-print(validation_sample)    #3589
-
-print("After:")
-print(data_set.head(n=20))
-
-X_data = np.empty((0, 2304))
-Y_data = np.array([])
-
-#data_set.to_csv('smile_warrior_dataset.csv')
-
-numpy_test = np.array([])
-for i in range(5):
-    numpy_test = np.append(numpy_test, i)
-
-print(numpy_test)
-print(type(numpy_test))
-print(numpy_test.shape)
-
-numpy_test2 = np.array([])
-numpy_test2 = np.append(numpy_test2, [i for i in range(5)])
-print(numpy_test2)
-print(type(numpy_test2))
-print(numpy_test2.shape)
-
-print("Creating data_set ...")
-
-for index,row in data_set.iterrows():
-    numpy_row = np.array([])
-    #for s in row['pixels'].split():
-        #pixel_numpy[index, counter] = float(s)
-        #numpy_row = np.append(numpy_row, float(s))
-    numpy_row = np.append(numpy_row, [float(s) for s in row['pixels'].split()])
-    #print(numpy_row.shape)
-    X_data = np.append(X_data, [numpy_row], axis=0)
-    Y_data = np.append(Y_data, float(row['emotion']))
-    #np.append(pixel_numpy, X)
-    #X.append(pixel_numpy)
-
-#print(pixel_array)
-#pixel_numpy = np.array(pixel_array)
-"""
-print(pixel_numpy.shape)
-print(pixel_numpy[0,0:10])
-#print(pixel_numpy)
-np.savetxt("temp.csv", pixel_numpy, delimiter=",")
-pixel_numpy = np.reshape(pixel_numpy, (3, 48,48))
-print(pixel_numpy.shape)
-plt.imshow(pixel_numpy[0])
-plt.show()
-"""
-# a = np.array([[1],[2],[3]])
-# b = np.array([[1],[2],[3]])
-#
-# print(a)
-# print(b)
-#
-# c = np.column_stack((a,b))
-# print(c)
-#
-# d = np.array([1,2,3])
-# print(d)
-# print(d.shape)
-#
-# e = np.array([4,5,6])
-# print(e)
-#
-# f = np.array([])
-# print(f)
-#
-# f = np.concatenate((f,d.T),axis=0)
-# print(f)
-# f = np.concatenate((f,e.T),axis=0)
-# print(f)
-# print(f.shape)
-# g = np.copy(e)
-# g = np.vstack((g,d))
-# print(g.shape)
-# print(g)
-#
-# print(X_data.shape)
-#
-#
-# arr = np.empty((0,3), int)
-#
-# arr = np.append(arr, np.array([[1,2,3]]), axis=0)
-# arr = np.append(arr, np.array([[4,5,6]]), axis=0)
-#
-# print(arr)
-# print(arr.shape)
-
-print("X_data i Y_data shape")
-print(X_data.shape)
-print(Y_data.shape)
-
-np.savetxt("X_data.csv", X_data, delimiter=",")
-np.savetxt("Y_data.csv", Y_data, delimiter=",")
+    return X_train, Y_train, X_test, Y_test, X_validate, Y_validate
 
 
 
+def Show_Picture(wchich_one, X_data):
 
-#print(pd.to_numeric(row['pixels']))
+    import matplotlib.pyplot as plt
 
+    plt.imshow(X_data[wchich_one,:].reshape(48, 48))
+    plt.show()
 
-
-
-
+    return None

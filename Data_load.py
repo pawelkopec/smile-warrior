@@ -1,30 +1,37 @@
-#Nothing interesting, script in need of improvement
+#Script loading data set (value of emotions and values of pixels) to numpy arrays
 
-from numpy import genfromtxt
+import numpy as np
 
-training_sample = 28709
-test_sample = 3589
-validation_sample= 3589
+filename = 'smile_warrior_dataset.csv'
 
-X = genfromtxt('X_data.csv', delimiter=',')
-Y = genfromtxt('Y_data.csv', delimiter=',')
+try:
+    file = open(filename)
+except:
+    print("Unable to open the file")
+else:
+    print("File opened")
 
-print("Wczytane")
+X_list = []
+Y_list = []
 
-X_train = X[0:training_sample,:]
-X_validate = X[training_sample:training_sample+test_sample, :]
-X_test = X[training_sample+test_sample:training_sample+test_sample+validation_sample, :]
+first_line = True
 
-Y_train = Y[0:training_sample,:]
-Y_validate = Y[training_sample:training_sample+test_sample, :]
-Y_test = Y[training_sample+test_sample:training_sample+test_sample+validation_sample, :]
+print("Converting data...")
 
-print("Shape:")
+for line in file:
+    if first_line==True:
+        first_line = False
+    else:
+        row = line.split(',')
+        Y_list.append(int(row[0]))
+        X_list.append([int(pixel) for pixel in row[1].split()])
 
-print(X_train.shape)
-print(X_validate.shape)
-print(X_test.shape)
+X_data = np.array(X_list)
+Y_data = np.array(Y_list)
 
-print(Y_train.shape)
-print(Y_validate.shape)
-print(Y_test.shape)
+print("Data converted")
+
+print("X_data shape: %d %d" % (X_data.shape))
+print("Y_data shape: %d " % (Y_data.shape))
+
+file.close()
