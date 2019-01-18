@@ -1,7 +1,7 @@
 #Test script to load data by function
 
 import sys
-sys.path.append("B:\STUDIA MATERIALY\Gradient\Rozpoznawanie usmiechow\Rozpoznawanie usmiechow program")
+sys.path.append("Your path to project file")
 from data_server import *
 
 filename = 'smile_warrior_dataset.csv'
