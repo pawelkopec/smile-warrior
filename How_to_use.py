@@ -1,4 +1,4 @@
-#Example how to load dataset by function from module and to show single picture
+#Example how to load dataset by function from module and how to show single picture
 
 import sys
 sys.path.append("Your path to project file for example: B:/Gradient/Smile_warrior")
