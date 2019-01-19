@@ -1,6 +1,6 @@
-#Module to load data set and divide it into train, test and validation sets for X and Y
+#Module to load dataset and divide it into train, test and validation sets for X and Y
 
-def load_data(filename):
+def Load_dataset(filename):
 
     import numpy as np
 
@@ -16,7 +16,7 @@ def load_data(filename):
 
     first_line = True
 
-    print("Preparing data...")
+    print("Preparing dataset...")
 
     for line in file:
         if first_line == True:          #Skipping first line of file which contains name of data columns
@@ -46,7 +46,7 @@ def load_data(filename):
     Y_validate = Y_data[training_sample:training_sample + test_sample]
     Y_test = Y_data[training_sample + test_sample:training_sample + test_sample + validation_sample]
 
-    print("Data prepared")
+    print("Dataset prepared")
 
     return X_train, Y_train, X_test, Y_test, X_validate, Y_validate
 

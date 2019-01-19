@@ -1,4 +1,4 @@
-#Script loading data set (value of emotions and values of pixels) to numpy arrays
+#Script loading dataset (value of emotions and values of pixels) to numpy arrays
 
 import numpy as np
 

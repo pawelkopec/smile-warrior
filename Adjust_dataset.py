@@ -1,4 +1,4 @@
-#Script changing labels of emotions to 1 - smile, 0 - no smile and saving changed data set to new csv file
+#Script changing labels of emotions to 1 - smile, 0 - no smile and saving changed dataset to new csv file
 
 import pandas as pd
 
@@ -13,6 +13,8 @@ print(data_set.shape)
 training_sample = 0
 test_sample = 0
 validation_sample= 0
+
+print("Adjusting dataset... ")
 
 #Emotion with label 3 is happines to we change label to 1 for our smile detector, other emotions are changed to 0.
 for index,row in data_set.iterrows():
@@ -37,4 +39,5 @@ print("After:")
 print(data_set.head(n=20))
 
 data_set.to_csv('smile_warrior_dataset.csv', index=False)
+print("Smile-Warrior dataset created in file 'smile_warrior_dataset.csv'")
 
