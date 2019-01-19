@@ -1,4 +1,4 @@
-#Test script to load data by function
+#Test script to load data by function from module and to show single picture
 
 import sys
 sys.path.append("Your path to project file")

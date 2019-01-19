@@ -1,4 +1,4 @@
-#Script changing labels of emotions to 1 - smile, 0 - no smile
+#Script changing labels of emotions to 1 - smile, 0 - no smile and saving changed data set to new csv file
 
 import pandas as pd
 
@@ -9,14 +9,16 @@ print(data_set.head(n=20))
 
 print(data_set.shape)
 
+#Counting size of train, test and validation sets
 training_sample = 0
 test_sample = 0
 validation_sample= 0
 
+#Emotion with label 3 is happines to we change label to 1 for our smile detector, other emotions are changed to 0.
 for index,row in data_set.iterrows():
     if (row['emotion'] == 3):
         data_set.at[index, 'emotion'] = 1
-    elif (row['emotion'] != 3):
+    else:
         data_set.at[index, 'emotion'] = 0
 
     if (row['Usage'] == 'Training'):
@@ -27,9 +29,9 @@ for index,row in data_set.iterrows():
         validation_sample= validation_sample + 1
 
 
-print(training_sample)      #28709
-print(test_sample)          #3589
-print(validation_sample)    #3589
+print("Size of training data set: %d " % training_sample)         #28709
+print("Size of test data set: %d " % test_sample)                 #3589
+print("Size of validation data set: %d " % validation_sample)     #3589
 
 print("After:")
 print(data_set.head(n=20))

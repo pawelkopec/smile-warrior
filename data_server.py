@@ -19,11 +19,13 @@ def load_data(filename):
     print("Preparing data...")
 
     for line in file:
-        if first_line == True:
+        if first_line == True:          #Skipping first line of file which contains name of data columns
             first_line = False
         else:
             row = line.split(',')
             Y_list.append(int(row[0]))
+            # Pixel values for each picture are saved in csv in single cells as a string containing values splited by
+            # space-bar so we need to split that string to substrings, convert them to ints and add these pixel values to list one by one
             X_list.append([int(pixel) for pixel in row[1].split()])
 
     X_data = np.array(X_list)
@@ -35,6 +37,7 @@ def load_data(filename):
     test_sample = 3589
     validation_sample = 3589
 
+    #Divide whole data set to train, test and validation data sets for X and Y
     X_train = X_data[0:training_sample, :]
     X_test = X_data[training_sample:training_sample + test_sample, :]
     X_validate = X_data[training_sample + test_sample:training_sample + test_sample + validation_sample, :]
@@ -48,7 +51,7 @@ def load_data(filename):
     return X_train, Y_train, X_test, Y_test, X_validate, Y_validate
 
 
-
+#Showing single picture from X_data numpy array, number of picture is controled by variable 'which_one'
 def Show_Picture(wchich_one, X_data):
 
     import matplotlib.pyplot as plt
