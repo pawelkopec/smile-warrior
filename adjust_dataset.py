@@ -1,8 +1,8 @@
 #Script changing labels of emotions to 1 - smile, 0 - no smile and saving changed dataset to new csv file
+import pandas as pd
 
 
 def main():
-    import pandas as pd
 
     HAPPINESS = 3
 
