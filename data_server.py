@@ -1,5 +1,4 @@
 # Module to load dataset and divide it into train, test and validation sets for X and Y
-
 import numpy as np
 import matplotlib.pyplot as plt
 
