@@ -7,7 +7,7 @@ HAPPINESS = 3
 
 def main():
 
-    #data_set = pd.read_csv("fer2013.csv")
+    # data_set = pd.read_csv("fer2013.csv")
 
     parser = argparse.ArgumentParser(description='Input and output csv file')
 
