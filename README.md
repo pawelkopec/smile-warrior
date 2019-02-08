@@ -1,14 +1,16 @@
 # smile-warrior
 This repo contains code used for smile detector for project of Gradient Science Club.
 
-## To create dataset run: 
+## To create dataset:
+Run:
 ```bash
     adjust_dataset.py 
 ```
 
 Result will be csv file named 'smile_warrior_dataset'.
 
-## To load dataset use function:
+## To load dataset:
+Use function:
 ```bash
     load_dataset  
 ```
