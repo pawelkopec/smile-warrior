@@ -1,21 +1,43 @@
 # Module to load dataset and divide it into train, test and validation sets for X and Y
 import numpy as np
 import matplotlib.pyplot as plt
+import math
+
+usage = ["Training\n", "PublicTest\n", "PrivateTest\n"]
 
 
 def load_dataset(filename):
+    """
+    Function loads dataset from csv file at path passed as param 'filename' and then returns respectively:
+    x_train, y_train, x_test, y_test, x_validate and y_validate datasets.
+
+    Dataset is divided based on values in column 'Usage' in csv file.
+
+    You have to firstly create Smile-Warrior dataset by running script 'adjust_data_set' which creates it
+    from fer2013.csv dataset.
+
+    Example:
+
+        x_train, y_train, x_test, y_test, x_validate, y_validate = load_dataset(filename)
+
+    :param filename:
+        Path to csv file with dataset.
+
+    :return:
+        6 numpy arrays containing train, test and validate datasets for X and Y.
+    """
 
     with open(filename) as file:
 
         next(file)  # Skipping first line of file which contains name of data columns
 
-        X_list_train = []
-        X_list_test = []
-        X_list_valid = []
+        x_list_train = []
+        x_list_test = []
+        x_list_valid = []
 
-        Y_list_train = []
-        Y_list_test = []
-        Y_list_valid = []
+        y_list_train = []
+        y_list_test = []
+        y_list_valid = []
 
         print("Preparing dataset...")
 
@@ -27,33 +49,55 @@ def load_dataset(filename):
             # by space-bar so we need to split that string to substrings, convert them to ints and add these pixel
             # values to list one by one
 
-            if row[2] == "Training\n":
-                Y_list_train.append(int(row[0]))
-                X_list_train.append([int(pixel) for pixel in row[1].split()])
+            if row[2] == usage[0]:
+                y_list_train.append(int(row[0]))
+                x_list_train.append([int(pixel) for pixel in row[1].split()])
 
-            elif row[2] == "PublicTest\n":
-                Y_list_test.append(int(row[0]))
-                X_list_test.append([int(pixel) for pixel in row[1].split()])
+            elif row[2] == usage[1]:
+                y_list_test.append(int(row[0]))
+                x_list_test.append([int(pixel) for pixel in row[1].split()])
 
-            elif row[2] == "PrivateTest\n":
-                Y_list_valid.append(int(row[0]))
-                X_list_valid.append([int(pixel) for pixel in row[1].split()])
+            elif row[2] == usage[2]:
+                y_list_valid.append(int(row[0]))
+                x_list_valid.append([int(pixel) for pixel in row[1].split()])
 
-        X_train = np.array(X_list_train)
-        X_test = np.array(X_list_test)
-        X_validate = np.array(X_list_valid)
+        x_train = np.array(x_list_train)
+        x_test = np.array(x_list_test)
+        x_validate = np.array(x_list_valid)
 
-        Y_train = np.array(Y_list_train)
-        Y_test = np.array(Y_list_test)
-        Y_validate = np.array(Y_list_valid)
+        y_train = np.array(y_list_train)
+        y_test = np.array(y_list_test)
+        y_validate = np.array(y_list_valid)
 
         print("Dataset prepared")
 
-        return X_train, Y_train, X_test, Y_test, X_validate, Y_validate
+        return x_train, y_train, x_test, y_test, x_validate, y_validate
 
 
-# Showing single picture from X_data numpy array, number of picture is controled by variable 'which_one'
-def show_picture(which_one, x_data):
+def show_picture(picture, x_dim, y_dim):
+    """
+    Showing single picture passed as an input param in form of a numpy array.
 
-    plt.imshow(x_data[which_one, :].reshape(48, 48))
+    Function reshapes input numpy array to shape (x_dim, y_dim) and then uses matplotlib.pyplot.imshow to plot it.
+
+    Example:
+
+        show_picture(x_train[9], 48, 48)
+
+    Where 9 is the picture number in dataset we want to show.
+
+    :param picture:
+        Picture in form of numpy array containing consecutive values of pixels, this numpy array should be appropriate
+        to change its shape to (x_dim, y_dim).
+
+    :param x_dim:
+        Dimension of showed picture in X axis.
+
+    :param y_dim:
+        Dimension of showed picture in Y axis.
+    """
+
+    plt.imshow(picture.reshape(x_dim, y_dim))
     plt.show()
+
+

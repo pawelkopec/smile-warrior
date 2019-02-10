@@ -4,7 +4,7 @@ This repo contains code used for smile detector for project of Gradient Science 
 ## To create dataset:
 Run:
 ```
-    adjust_dataset.py 
+   python adjust_dataset.py 
 ```
 
 Result will be csv file named 'smile_warrior_dataset'.
@@ -16,6 +16,6 @@ Use function:
 ```
 from module:
 ```
-    data_server.py
+   python data_server.py
 ```
-Which returns respectively: X_train, Y_train, X_test, Y_test, X_validate and Y_validate datasets. 
+Which returns respectively: x_train, y_train, x_test, y_test, x_validate and y_validate datasets. 

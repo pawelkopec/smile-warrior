@@ -1,8 +1,20 @@
 from keras.preprocessing.image import ImageDataGenerator
 
+shift = 0.1
+
 
 def create_datagen():
-    shift = 0.1
+    """
+    Function creates ImageDataGenerator used in process of augmentation Smile-Warrior dataset to increase accuracy of
+    trained neural network. Arguments of ImageDataGenerator can be adjusted below.
+
+    Example:
+
+            datagen = create_datagen()
+
+    :return:
+        ImageDataGenerator: Class generating batches of tensor image data with real-time data augmentation
+    """
 
     datagen = ImageDataGenerator(
         featurewise_center=False,
