@@ -7,14 +7,10 @@ Run:
    python adjust_dataset.py 
 ```
 
-Result will be csv file named 'smile_warrior_dataset'.
+Result will be a csv file with dataset for Smile-Warrior (by default in: "smile_warrior_dataset.csv").
 
 ## To load dataset:
-Use function:
-```
-    load_dataset  
-```
-from module:
+Use:
 ```
    python data_server.py
 ```

@@ -8,10 +8,8 @@ usage = ["Training\n", "PublicTest\n", "PrivateTest\n"]
 
 def load_dataset(filename):
     """
-    Function loads dataset from csv file at path passed as param 'filename' and then returns respectively:
-    x_train, y_train, x_test, y_test, x_validate and y_validate datasets.
-
-    Dataset is divided based on values in column 'Usage' in csv file.
+    Function loads dataset from csv file at path passed as param 'filename'.
+    Dataset is divided into train, test and validate parts based on values in column 'Usage' in csv file.
 
     You have to firstly create Smile-Warrior dataset by running script 'adjust_data_set' which creates it
     from fer2013.csv dataset.
@@ -80,12 +78,6 @@ def show_picture(picture, x_dim, y_dim):
 
     Function reshapes input numpy array to shape (x_dim, y_dim) and then uses matplotlib.pyplot.imshow to plot it.
 
-    Example:
-
-        show_picture(x_train[9], 48, 48)
-
-    Where 9 is the picture number in dataset we want to show.
-
     :param picture:
         Picture in form of numpy array containing consecutive values of pixels, this numpy array should be appropriate
         to change its shape to (x_dim, y_dim).
@@ -99,5 +91,3 @@ def show_picture(picture, x_dim, y_dim):
 
     plt.imshow(picture.reshape(x_dim, y_dim))
     plt.show()
-
-
