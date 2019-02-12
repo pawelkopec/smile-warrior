@@ -1,78 +1,218 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from keras.models import Sequential
-from keras.models import load_model
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Convolution2D, MaxPooling2D
+import math
+import argparse
+from data_server import load_dataset
+from time import time
+from keras.models import Sequential, load_model
+from keras.layers import Dense, Dropout, Flatten, Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras import optimizers
-import sys
-from keras.callbacks import ModelCheckpoint
-sys.path.append('\PycharmProjects\smile-warrior')
-from data_server import *
+from keras.callbacks import ModelCheckpoint, TensorBoard
 
 
-#Downloading and reshaping data
-X_train, Y_train, X_test, Y_test, X_validate, Y_validate = Load_dataset('smile_warrior_dataset.csv')
-X_train = X_train.reshape(X_train.shape[0], 48, 48, 1)
-X_test = X_test.reshape(X_test.shape[0], 48, 48, 1)
-X_validate = X_validate.reshape(X_validate.shape[0], 48, 48, 1)
+def data_preparation(args):
+    """
+    This module prepares data for training and validation process.
+
+    :param args:
+        Dataset file path.
+
+    :return:
+        6 numpy arrays containing train, test and validate datasets for x and y.
+        Shape containing height/width of processed images.
+    """
+    # Downloading and reshaping data
+    x_train, y_train, x_test, y_test, x_validate, y_validate = load_dataset(args.dataset)
+    shape = int(math.sqrt(x_train.shape[1]))
+    x_train = x_train.reshape(x_train.shape[0], shape, shape, 1)
+    x_test = x_test.reshape(x_test.shape[0], shape, shape, 1)
+    x_validate = x_validate.reshape(x_validate.shape[0], shape, shape, 1)
+
+    # Normalization
+    x_train = (x_train - 256/2) / 256
+    x_test = (x_test - 256/2) / 256
+    x_validate = (x_validate - 256/2) / 256
+
+    # Preparing a proper format of output data
+    y_train = np_utils.to_categorical(y_train, 2)
+    y_test = np_utils.to_categorical(y_test, 2)
+    y_validate = np_utils.to_categorical(y_validate, 2)
+
+    return x_train, y_train, x_test, y_test, x_validate, y_validate, shape
 
 
-#Normalization
-mean_image = np.mean(X_train)
-std_image = np.std(X_train)
-X_train = (X_train - mean_image) / std_image
-X_test = (X_test - mean_image) / std_image
-X_validate = (X_validate - mean_image) / std_image
+def network_preparation(shape, learning_rate, saving_period, args):
+    """
+    This module prepares convolutional neural network model for future training.
+
+    :param shape:
+        Height/width of processed images.
+
+    :param learning_rate:
+        Length of single step in gradient propagation.
+
+    :param saving_period:
+        How many epochs of training must pass before saving model.
+
+    :param args:
+        Models and logs saving directories.
+
+    :return:
+        Randomly initialised model prepared for training.
+        Checkpointer object containing parameters needed in model saving.
+        Tensorboard object containing parameters needed in logs saving.
+    """
+    model = Sequential()
+
+    model.add(Convolution2D(32, (3, 3), activation='relu', input_shape=(shape, shape, 1)))
+
+    model.add(Convolution2D(32, (3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Flatten())
+    model.add(Dense(128, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(2, activation='softmax'))
+
+    opt = optimizers.Adam(lr=learning_rate)
+    model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
+
+    checkpointer = ModelCheckpoint(filepath=args.models_dir,
+                                   verbose=1, save_best_only=False, save_weights_only=False, period=saving_period)
+
+    tensorboard = TensorBoard(log_dir=args.logs_dir.format(time()))
+
+    return model, checkpointer, tensorboard
 
 
-#Preparing a proper format of output data
-Y_train = np_utils.to_categorical(Y_train, 2)
-Y_test = np_utils.to_categorical(Y_test, 2)
-Y_validate = np_utils.to_categorical(Y_validate, 2)
+def training(batch_size, epochs, model, checkpointer, tensorboard, x_train, y_train, x_validate, y_validate):
+    """
+    This module trains neural network model.
+
+    :param batch_size:
+        Number of images in one training batch.
+
+    :param epochs:
+        Number of training epochs.
+
+    :param model:
+        Neural network model using in training process.
+
+    :param checkpointer:
+        Object containing parameters needed in model saving.
+
+    :param tensorboard:
+        Object containing parameters needed in logs saving.
+
+    :param x_train:
+        Input training data.
+
+    :param y_train:
+        Output training data.
+
+    :param x_validate:
+        Input validation data.
+
+    :param y_validate:
+        Output validation data.
+
+    :return:
+        Trained neural network model.
+    """
+    model.fit(x_train, y_train,
+              batch_size=batch_size, epochs=epochs, verbose=1, shuffle=False,
+              validation_data=(x_validate, y_validate), callbacks=[checkpointer, tensorboard])
+
+    return model
 
 
-#Network parameters
-Batch_size = 32
-Epochs = 5
-Saving_period = 1
-Learning_rate = 0.001
+def testing(epochs, saving_period, x_test, y_test, args, model):
+    """
+    This module tests model after each training epoch on testing dataset and shows score.
+
+    :param epochs:
+        Number of training epochs.
+
+    :param saving_period:
+        How many epochs of training must pass before saving model.
+
+    :param x_test:
+        Input testing data.
+
+    :param y_test:
+        Output testing data.
+
+    :param args:
+        Path for loading model.
+
+    :param model
+        Tested  neural network model.
+    """
+    for i in range(int(epochs/saving_period)):
+        # Downloading weights
+        try:
+            model = load_model(args.model_load.format(i+1))
+        except:
+            print("Unable to load model")
+        # Checking results with testing dataset
+        score_test = model.evaluate(x_test, y_test, verbose=1)
+        print("Score after {}. epoch on testing dataset: ".format(i+1))
+        print("Loss:")
+        print(score_test[0])
+        print("Accuracy:")
+        print(score_test[1])
 
 
-#Preparing neural network model
-model = Sequential()
-model.add(Convolution2D(32, (3, 3), activation = 'relu', input_shape = (48,48,1)))
-model.add(Convolution2D(32, (3, 3), activation = 'relu'))
-model.add(MaxPooling2D(pool_size = (2,2)))
-model.add(Dropout(0.25))
-model.add(Flatten())
-model.add(Dense(128, activation ='relu'))
-model.add(Dropout(0.5))
-model.add(Dense(2, activation ='softmax'))
-opt = optimizers.Adam(lr = Learning_rate)
-model.compile(loss = 'categorical_crossentropy', optimizer = opt, metrics = ['accuracy'])
-checkpointer = ModelCheckpoint(filepath = 'D:\Python3.6.6\Jupyter\smile_warrior\weights.{epoch:02d}.hdf5',
-                               verbose = 1, save_best_only = False, period = Saving_period)
+def parse_args():
+    """
+    This module parses command line arguments.
 
-#Saving model
-model.save('model.hdf5')
+    :return:
+        Parser containing command line data.
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--dataset', '-d', metavar="csv file containing dataset",
+                        help='input file containing dataset required in training', default='smile_warrior_dataset.csv')
+
+    parser.add_argument('--batch_size', '-b', metavar="number of images in one batch",
+                        help='number of images in one batch', type=int, default=32)
+
+    parser.add_argument('--epochs', '-e', metavar="number of training epochs",
+                        help='number of training epochs', type=int, default=10)
+
+    parser.add_argument('--saving_period', '-s', metavar="how many epochs must pass before saving",
+                        help='how many epochs must pass before saving', type=int, default=1)
+
+    parser.add_argument('--learning_rate', '-lr', metavar="specifies learning rate",
+                        help='specifies learning rate', type=float, default=0.0001)
+
+    parser.add_argument('--models_dir', '-m', metavar="specifies saving directory for models",
+                        help='specifies saving directory for models', default='model.{epoch:02d}.hdf5')
+
+    parser.add_argument('--logs_dir', '-ld', metavar="specifies saving directory for logs",
+                        help='specifies saving directory for logs', default='logs')
+
+    parser.add_argument('--model_load', '-ml', metavar="specifies path for loading models",
+                        help='specifies path for loading models', default="model.0{}.hdf5")
+
+    return parser.parse_args()
 
 
-#Training
-model.fit(X_train, Y_train,
-          batch_size = Batch_size, epochs = Epochs, verbose = 1, shuffle = True,
-          validation_data = (X_validate, Y_validate), callbacks = [checkpointer])
+def main():
+    args = parse_args()
+
+    # Network parameters
+    batch_size = args.batch_size
+    epochs = args.epochs
+    saving_period = args.saving_period
+    learning_rate = args.learning_rate
+
+    x_train, y_train, x_test, y_test, x_validate, y_validate, shape = data_preparation(args)
+    model, checkpointer, tensorboard = network_preparation(shape, learning_rate, saving_period, args)
+    model = training(batch_size, epochs, model, checkpointer, tensorboard, x_train, y_train, x_validate, y_validate)
+    testing(epochs, saving_period, x_test, y_test, args, model)
 
 
-#Downloading model
-#model = load_model('model.hdf5')
-
-
-for i in range((int)(Epochs/Saving_period)):
-    #Downloading weights
-    model.load_weights("D:\Python3.6.6\Jupyter\smile_warrior\weights.0{}.hdf5".format(i+1))
-    #Checking results with testing dataset
-    score_test = model.evaluate(X_test, Y_test, verbose = 1)
-    print("Score after {}. epoch: ".format(i+1))
-    print(score_test)
+if __name__ == "__main__":
+    main()
