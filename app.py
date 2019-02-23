@@ -12,30 +12,14 @@ import cv2
 app = Flask(__name__)
 
 
-cascpath = "haarcascade_frontalface_default.xml"
-modelpath = "model.hdf5"
-weightspath = "weights.03.hdf5"
-
-
-graph = tf.get_default_graph()
-model = load_model('model.hdf5')
-model.load_weights('weights.03.hdf5')
-print('loaded everything :)')
-
-
 def parse_args():
     parser = argparse.ArgumentParser(description='Input of model, weights and cascade path')
-    parser.add_argument('--cascade-path', '-c', required=False, type=str,
-                        help='OpenCV cascade file path, default set to: ' +
-                             cascpath, default=cascpath)
-    parser.add_argument('--model', '-t', required=False, type=str,
-                        help='Model address address, default' +
-                        'set to: ' + modelpath,
-                        default=modelpath)
-    parser.add_argument('--weight', '-t', required=False, type=str,
-                        help='Model weights address address, default' +
-                        'set to: ' + weightspath,
-                        default=weightspath)
+    parser.add_argument('-cascade', required=True, type=str,
+                        help='OpenCV cascade file path')
+    parser.add_argument('-model', required=True, type=str,
+                        help='Model address path', default="model.hdf5")
+    parser.add_argument('-weight', required=True, type=str,
+                        help='Model weights path')
     return parser.parse_args()
 
 
@@ -47,10 +31,10 @@ def hello():
 
 def prepare_faces(image):
     """ Prepare image to the requirements of the model"""
-    facecascade = cv2.CascadeClassifier(cascpath)
+    facecascade = cv2.CascadeClassifier(cascade)
     faces = extract_faces(image, facecascade)
     if len(faces) == 0:
-        raise ValueError("Couldn't find face on an image.")
+        raise ValueError("-1")
     data_in = face_as_net_input(faces[0], tuple([48, 48])).astype('f')
     return data_in
 
@@ -81,7 +65,12 @@ def classify():
 # run the application
 if __name__ == "__main__":
     args = parse_args()
-    cascpath = args.cascade_path
-    model = args.modelpath
-    weight = args.weightspath
+    cascade = args.cascade
+    model = args.model
+    weight = args.weight
+    graph = tf.get_default_graph()
+    model = load_model(model)
+    model.load_weights(weight)
+    print('loaded everything :)')
     app.run(debug=False)
+

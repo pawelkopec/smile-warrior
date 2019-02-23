@@ -62,7 +62,16 @@ let timerCallback = function() {
                 imgName: "webcam.png"
             }
         }).done(function(data) {
-        document.getElementById("smile").innerHTML = data;
+            result=parseFloat(data)
+            if (result == -1){ document.getElementById("smile").innerHTML = "face not detected :((";}
+            else {
+                if (result >= 0.5) {
+                    document.getElementById("smile").innerHTML = "smile not detected :(";
+                }
+                else {
+                    document.getElementById("smile").innerHTML = "smile";
+                }
+            }
         });
 
     }

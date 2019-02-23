@@ -17,10 +17,7 @@ def smile_detecting(face, model):
     face = face.reshape(1, 48, 48, 1)
     with graph.as_default():
         prediction = model.predict(face)
-    if prediction[0, 0] >= 0.5:
-        return "sad"
-    else:
-        return "happy"
+    return str(prediction[0, 0])
 
 
 def is_gray(img: np.ndarray) -> bool:
