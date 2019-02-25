@@ -9,38 +9,58 @@ from keras import optimizers
 from keras.callbacks import ModelCheckpoint, TensorBoard
 
 
-def data_preparation(args):
+def prepare_data(dataset):
     """
     This module prepares data for training and validation process.
 
-    :param args:
+    :param dataset:
         Dataset file path.
 
     :return:
         6 numpy arrays containing train, test and validate datasets for x and y.
-        Shape containing height/width of processed images.
+        side_length containing height/width of processed images.
     """
     # Downloading and reshaping data
-    x_train, y_train, x_test, y_test, x_validate, y_validate = load_dataset(args.dataset)
-    shape = int(math.sqrt(x_train.shape[1]))
-    x_train = x_train.reshape(x_train.shape[0], shape, shape, 1)
-    x_test = x_test.reshape(x_test.shape[0], shape, shape, 1)
-    x_validate = x_validate.reshape(x_validate.shape[0], shape, shape, 1)
+    x_train, y_train, x_test, y_test, x_validate, y_validate = load_dataset(dataset)
+    side_length = int(math.sqrt(x_train.shape[1]))
+    x_train = x_train.reshape(x_train.shape[0], side_length, side_length, 1)
+    x_test = x_test.reshape(x_test.shape[0], side_length, side_length, 1)
+    x_validate = x_validate.reshape(x_validate.shape[0], side_length, side_length, 1)
 
-    # Normalization
-    x_train = (x_train - 256/2) / 256
-    x_test = (x_test - 256/2) / 256
-    x_validate = (x_validate - 256/2) / 256
+    x_train, x_test, x_validate = normalize(x_train, x_test, x_validate)
 
     # Preparing a proper format of output data
     y_train = np_utils.to_categorical(y_train, 2)
     y_test = np_utils.to_categorical(y_test, 2)
     y_validate = np_utils.to_categorical(y_validate, 2)
 
-    return x_train, y_train, x_test, y_test, x_validate, y_validate, shape
+    return x_train, y_train, x_test, y_test, x_validate, y_validate, side_length
 
 
-def network_preparation(shape, learning_rate, saving_period, args):
+def normalize(x_train, x_test, x_validate):
+    """
+    This module performs normalization of input images
+
+    :param x_train:
+        Input training data.
+
+    :param x_test:
+        Input testing data.
+
+    :param x_validate:
+        Input validation data.
+
+    :return:
+        Normalized input images.
+    """
+    x_train = (x_train - 256 / 2) / 256
+    x_test = (x_test - 256 / 2) / 256
+    x_validate = (x_validate - 256 / 2) / 256
+
+    return x_train, x_test, x_validate
+
+
+def prepare_network(shape, learning_rate, saving_period, models_dir, logs_dir):
     """
     This module prepares convolutional neural network model for future training.
 
@@ -53,8 +73,11 @@ def network_preparation(shape, learning_rate, saving_period, args):
     :param saving_period:
         How many epochs of training must pass before saving model.
 
-    :param args:
-        Models and logs saving directories.
+    :param models_dir:
+        Models saving directory.
+
+    :param logs_dir:
+        Logs saving directory.
 
     :return:
         Randomly initialised model prepared for training.
@@ -77,15 +100,15 @@ def network_preparation(shape, learning_rate, saving_period, args):
     opt = optimizers.Adam(lr=learning_rate)
     model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
 
-    checkpointer = ModelCheckpoint(filepath=args.models_dir,
+    checkpointer = ModelCheckpoint(filepath=models_dir,
                                    verbose=1, save_best_only=False, save_weights_only=False, period=saving_period)
 
-    tensorboard = TensorBoard(log_dir=args.logs_dir.format(time()))
+    tensorboard = TensorBoard(log_dir=logs_dir.format(time()))
 
     return model, checkpointer, tensorboard
 
 
-def training(batch_size, epochs, model, checkpointer, tensorboard, x_train, y_train, x_validate, y_validate):
+def train(batch_size, epochs, model, checkpointer, tensorboard, x_train, y_train, x_validate, y_validate):
     """
     This module trains neural network model.
 
@@ -126,7 +149,7 @@ def training(batch_size, epochs, model, checkpointer, tensorboard, x_train, y_tr
     return model
 
 
-def testing(epochs, saving_period, x_test, y_test, args, model):
+def test(epochs, saving_period, x_test, y_test, load_dir, model):
     """
     This module tests model after each training epoch on testing dataset and shows score.
 
@@ -142,7 +165,7 @@ def testing(epochs, saving_period, x_test, y_test, args, model):
     :param y_test:
         Output testing data.
 
-    :param args:
+    :param load_dir:
         Path for loading model.
 
     :param model
@@ -151,7 +174,7 @@ def testing(epochs, saving_period, x_test, y_test, args, model):
     for i in range(int(epochs/saving_period)):
         # Downloading weights
         try:
-            model = load_model(args.model_load.format(i+1))
+            model = load_model(load_dir.format(i+1))
         except:
             print("Unable to load model")
         # Checking results with testing dataset
@@ -187,7 +210,7 @@ def parse_args():
     parser.add_argument('--learning_rate', '-lr', metavar="specifies learning rate",
                         help='specifies learning rate', type=float, default=0.0001)
 
-    parser.add_argument('--models_dir', '-m', metavar="specifies saving directory for models",
+    parser.add_argument('--models_dir', '-md', metavar="specifies saving directory for models",
                         help='specifies saving directory for models', default='model.{epoch:02d}.hdf5')
 
     parser.add_argument('--logs_dir', '-ld', metavar="specifies saving directory for logs",
@@ -207,11 +230,11 @@ def main():
     epochs = args.epochs
     saving_period = args.saving_period
     learning_rate = args.learning_rate
-
-    x_train, y_train, x_test, y_test, x_validate, y_validate, shape = data_preparation(args)
-    model, checkpointer, tensorboard = network_preparation(shape, learning_rate, saving_period, args)
-    model = training(batch_size, epochs, model, checkpointer, tensorboard, x_train, y_train, x_validate, y_validate)
-    testing(epochs, saving_period, x_test, y_test, args, model)
+    x_train, y_train, x_test, y_test, x_validate, y_validate, side_length = prepare_data(args.dataset)
+    model, checkpointer, tensorboard = prepare_network(side_length, learning_rate, saving_period,
+                                                       args.models_dir, args.logs_dir)
+    model = train(batch_size, epochs, model, checkpointer, tensorboard, x_train, y_train, x_validate, y_validate)
+    test(epochs, saving_period, x_test, y_test, args.model_load, model)
 
 
 if __name__ == "__main__":
