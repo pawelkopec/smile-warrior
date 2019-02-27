@@ -4,17 +4,17 @@ import tensorflow as tf
 from typing import Tuple
 
 
-RGB_DIMENSION_COUNT = 3
 graph = tf.get_default_graph()
 
 
 def smile_detecting(face, model):
     """ Detecting presence or lack of smile on the face and returning apopriate string """
+    neural_network_input_size = 48
     face = face[:, :, 0]
     mean_image = np.mean(face)
     std_image = np.std(face)
     face = (face - mean_image) / std_image
-    face = face.reshape(1, 48, 48, 1)
+    face = face.reshape(1, neural_network_input_size, neural_network_input_size, 1)
     with graph.as_default():
         prediction = model.predict(face)
     return str(prediction[0, 0])
@@ -33,12 +33,13 @@ def to_gray(img: np.ndarray) -> np.ndarray:
 def crop(img: np.ndarray, rect: Tuple[int, int, int, int]) -> np.ndarray:
     """ Crop out input image's fragment specified by the rectangle. """
     x, y, w, h = rect
-    return img[ x:x + w, y:y + h]
+    return img[x:x + w, y:y + h]
 
 
 def is_rgb(image):
     """ Check if given image is in rgb color space. """
-    return len(image.shape) == RGB_DIMENSION_COUNT
+    rgb_dimension = 3
+    return len(image.shape) == rgb_dimension
 
 
 def to_rgb(image):
@@ -62,10 +63,10 @@ def extract_faces(img, cascade):
 
 def face_as_net_input(face, image_size):
     """ Converting given face to input valid to the model"""
-    input = convert_to_colorspace([face], "grayscale")[0]
-    input = cv2.resize(input, image_size)
-    input = np.expand_dims(input, -1)
-    return input
+    face_input = convert_to_colorspace([face], "grayscale")[0]
+    face_input = cv2.resize(face_input, image_size)
+    face_input = np.expand_dims(face_input, -1)
+    return face_input
 
 
 def convert_to_colorspace(images, color_space="rgb"):
@@ -80,16 +81,10 @@ def convert_to_colorspace(images, color_space="rgb"):
         new_images = [
             image if is_rgb(image) else to_rgb(image) for image in images
         ]
+        return new_images
     # Convert to grayscale otherwise.
-    else:
-        new_images = [
+    new_images = [
             image if is_gray(image) else to_gray(image)
             for image in images
         ]
     return new_images
-
-
-
-
-
-

@@ -14,11 +14,11 @@ app = Flask(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Input of model, weights and cascade path')
-    parser.add_argument('-cascade', required=True, type=str,
+    parser.add_argument('--cascade', required=True, type=str,
                         help='OpenCV cascade file path')
-    parser.add_argument('-model', required=True, type=str,
+    parser.add_argument('--model', required=True, type=str,
                         help='Model address path', default="model.hdf5")
-    parser.add_argument('-weight', required=True, type=str,
+    parser.add_argument('--weight', required=True, type=str,
                         help='Model weights path')
     return parser.parse_args()
 
@@ -73,4 +73,3 @@ if __name__ == "__main__":
     model.load_weights(weight)
     print('loaded everything :)')
     app.run(debug=False)
-
