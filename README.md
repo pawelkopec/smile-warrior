@@ -14,4 +14,4 @@ Use:
 ```
    python data_server.py
 ```
-Which returns respectively: x_train, y_train, x_test, y_test, x_validate and y_validate datasets. 
+Which provides us with function that divides whole dataset for Smile-Warrior and returns respectively: x_train, y_train, x_test, y_test, x_validate and y_validate datasets. 
