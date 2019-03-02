@@ -37,9 +37,6 @@ def main():
 def parse_args():
     """
     Function to get paths to csv files from command-line arguments
-
-    :return:
-        Parser with two arguments 'input' and 'output'.
     """
 
     parser = argparse.ArgumentParser(description='Input and output csv files')

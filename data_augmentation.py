@@ -1,9 +1,9 @@
 from keras.preprocessing.image import ImageDataGenerator
 
-shift = 0.1
-
 
 def create_datagen():
+
+    shift = 0.1
 
     datagen = ImageDataGenerator(
         featurewise_center=False,

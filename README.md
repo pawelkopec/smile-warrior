@@ -1,4 +1,4 @@
-# smile-warrior
+# Smile-warrior
 This repo contains code used for smile detector for project of Gradient Science Club.
 
 ## To create dataset:
@@ -14,4 +14,4 @@ Use:
 ```
    python data_server.py
 ```
-Which provides us with function that divides whole dataset for Smile-Warrior and returns respectively: x_train, y_train, x_test, y_test, x_validate and y_validate datasets. 
+To split whole dataset for Smile-Warrior into respectively: x_train, y_train, x_test, y_test, x_validate and y_validate datasets. 
