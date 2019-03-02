@@ -2,7 +2,7 @@ import math
 import argparse
 from data_server import load_dataset
 from time import time
-from keras.models import Sequential, load_model
+from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from keras import optimizers
@@ -53,11 +53,7 @@ def normalize(x_train, x_test, x_validate):
     :return:
         Normalized input images.
     """
-    x_train = (x_train - 256 / 2) / 256
-    x_test = (x_test - 256 / 2) / 256
-    x_validate = (x_validate - 256 / 2) / 256
-
-    return x_train, x_test, x_validate
+    return (x_train - 256 / 2) / 256, (x_test - 256 / 2) / 256, (x_validate - 256 / 2) / 256
 
 
 def prepare_network(shape, learning_rate, saving_period, models_dir, logs_dir):
@@ -108,84 +104,6 @@ def prepare_network(shape, learning_rate, saving_period, models_dir, logs_dir):
     return model, checkpointer, tensorboard
 
 
-def train(batch_size, epochs, model, checkpointer, tensorboard, x_train, y_train, x_validate, y_validate):
-    """
-    This module trains neural network model.
-
-    :param batch_size:
-        Number of images in one training batch.
-
-    :param epochs:
-        Number of training epochs.
-
-    :param model:
-        Neural network model using in training process.
-
-    :param checkpointer:
-        Object containing parameters needed in model saving.
-
-    :param tensorboard:
-        Object containing parameters needed in logs saving.
-
-    :param x_train:
-        Input training data.
-
-    :param y_train:
-        Output training data.
-
-    :param x_validate:
-        Input validation data.
-
-    :param y_validate:
-        Output validation data.
-
-    :return:
-        Trained neural network model.
-    """
-    model.fit(x_train, y_train,
-              batch_size=batch_size, epochs=epochs, verbose=1, shuffle=False,
-              validation_data=(x_validate, y_validate), callbacks=[checkpointer, tensorboard])
-
-    return model
-
-
-def test(epochs, saving_period, x_test, y_test, load_dir, model):
-    """
-    This module tests model after each training epoch on testing dataset and shows score.
-
-    :param epochs:
-        Number of training epochs.
-
-    :param saving_period:
-        How many epochs of training must pass before saving model.
-
-    :param x_test:
-        Input testing data.
-
-    :param y_test:
-        Output testing data.
-
-    :param load_dir:
-        Path for loading model.
-
-    :param model
-        Tested  neural network model.
-    """
-    for i in range(int(epochs/saving_period)):
-        # Downloading weights
-        try:
-            model = load_model(load_dir.format(i+1))
-        except:
-            print("Unable to load model")
-        # Checking results with testing dataset
-        score_test = model.evaluate(x_test, y_test, verbose=1)
-        print("Score after {}. epoch on testing dataset: ".format(i+1))
-        print("Loss:")
-        print(score_test[0])
-        print("Accuracy:")
-        print(score_test[1])
-
-
 def parse_args():
     """
     This module parses command line arguments.
@@ -195,29 +113,23 @@ def parse_args():
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--dataset', '-d', metavar="csv file containing dataset",
-                        help='input file containing dataset required in training', default='smile_warrior_dataset.csv')
+    parser.add_argument('--dataset', '-d', help='input file containing dataset required in training',
+                        default='smile_warrior_dataset.csv')
 
-    parser.add_argument('--batch_size', '-b', metavar="number of images in one batch",
-                        help='number of images in one batch', type=int, default=32)
+    parser.add_argument('--batch_size', '-b', help='number of images in one batch', type=int, default=32)
 
-    parser.add_argument('--epochs', '-e', metavar="number of training epochs",
-                        help='number of training epochs', type=int, default=10)
+    parser.add_argument('--epochs', '-e', help='number of training epochs', type=int, default=10)
 
-    parser.add_argument('--saving_period', '-s', metavar="how many epochs must pass before saving",
-                        help='how many epochs must pass before saving', type=int, default=1)
+    parser.add_argument('--saving_period', '-s', help='how many epochs must pass before saving', type=int, default=1)
 
-    parser.add_argument('--learning_rate', '-lr', metavar="specifies learning rate",
-                        help='specifies learning rate', type=float, default=0.0001)
+    parser.add_argument('--learning_rate', '-lr', help='specifies learning rate', type=float, default=0.0001)
 
-    parser.add_argument('--models_dir', '-md', metavar="specifies saving directory for models",
-                        help='specifies saving directory for models', default='model.{epoch:02d}.hdf5')
+    parser.add_argument('--models_dir', '-md', help='specifies saving directory for models',
+                        default='model.{epoch:02d}.hdf5')
 
-    parser.add_argument('--logs_dir', '-ld', metavar="specifies saving directory for logs",
-                        help='specifies saving directory for logs', default='logs')
+    parser.add_argument('--logs_dir', '-ld', help='specifies saving directory for logs', default='logs')
 
-    parser.add_argument('--model_load', '-ml', metavar="specifies path for loading models",
-                        help='specifies path for loading models', default="model.0{}.hdf5")
+    parser.add_argument('--model_load', '-ml', help='specifies path for loading models', default="model.0{}.hdf5")
 
     return parser.parse_args()
 
@@ -233,8 +145,9 @@ def main():
     x_train, y_train, x_test, y_test, x_validate, y_validate, side_length = prepare_data(args.dataset)
     model, checkpointer, tensorboard = prepare_network(side_length, learning_rate, saving_period,
                                                        args.models_dir, args.logs_dir)
-    model = train(batch_size, epochs, model, checkpointer, tensorboard, x_train, y_train, x_validate, y_validate)
-    test(epochs, saving_period, x_test, y_test, args.model_load, model)
+    model.fit(x_train, y_train,
+              batch_size=batch_size, epochs=epochs, verbose=1, shuffle=False,
+              validation_data=(x_validate, y_validate), callbacks=[checkpointer, tensorboard])
 
 
 if __name__ == "__main__":
