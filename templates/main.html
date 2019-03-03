@@ -1,0 +1,88 @@
+<!-- TODO
+  * Display rectangle with face detected.
+  * Center the camera image.
+  -->
+<html>
+  <head>
+    <title></title>
+    <meta content="">
+    <style>
+#c1 {
+  display: none;
+}
+
+#prettyoutput {
+    background-color: coral;
+  font-size: 30px;
+  text-align: left;
+  width: 640px;
+  font-family: monospace;
+  white-space: pre;
+}
+    </style>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  </head>
+  <body>
+<video autoplay></video>
+<canvas id="c1" width="320" height="192"></canvas>
+<div id="output"></div>
+<div id="prettyoutput">
+    smile:     <span id="smile" > </span>
+</div>
+
+<script>
+
+
+const constraints = {
+  video: true
+};
+
+const video = document.querySelector('video');
+const canvas = document.querySelector('canvas');
+const canvas_ctx = canvas.getContext('2d');
+
+
+
+navigator.mediaDevices.getUserMedia(constraints).
+  then((stream) => {
+    video.srcObject = stream;
+    setTimeout(timerCallback, 100);
+  });
+
+let timerCallback = function() {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas_ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    if (canvas.width != 0) {
+        let frame = canvas_ctx.getImageData(0, 0, video.videoWidth, video.videoHeight);
+        let l = frame.data.length / 4;
+        let urlData = canvas.toDataURL('image/png');
+        $.ajax({
+            type: "POST",
+            crossDomain: true,
+            url: "http://localhost:5000/classify",
+            data: {
+                imgBase64: urlData,
+                imgName: "webcam.png"
+            }
+        }).done(function(data) {
+            result=parseFloat(data)
+            if (result == -1){ document.getElementById("smile").innerHTML = "face not detected :((";}
+            else {
+                if (result >= 0.5) {
+                    document.getElementById("smile").innerHTML = "smile not detected :(";
+                }
+                else {
+                    document.getElementById("smile").innerHTML = "smile";
+                }
+            }
+        });
+
+    }
+    setTimeout(timerCallback, 1000);
+
+}
+
+</script>
+  </body>
+</html>
